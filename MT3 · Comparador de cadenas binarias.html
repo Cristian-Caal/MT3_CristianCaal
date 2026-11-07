@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MT3 · Comparador de cadenas binarias</title>
+<style>
+:root{--bg:#f6f7f9;--sf:#fff;--tx:#1b1f24;--mu:#5b6573;--bd:#d6dbe2;--ac:#1f5fbf;--ok:#17803d;--er:#b42318;--hl:#ffe08a;--hd:#cfe3ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--sf:#1d2128;--tx:#e8ebf0;--mu:#9aa5b4;--bd:#323944;--ac:#6ea8ff;--ok:#4cc77a;--er:#ff7b72;--hl:#6b5a14;--hd:#223a63;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171c;--sf:#1d2128;--tx:#e8ebf0;--mu:#9aa5b4;--bd:#323944;--ac:#6ea8ff;--ok:#4cc77a;--er:#ff7b72;--hl:#6b5a14;--hd:#223a63;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:980px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:1.5rem;margin:.2em 0}h2{font-size:1.2rem;margin:1.6em 0 .5em;border-bottom:1px solid var(--bd);padding-bottom:.2em}
+.mu{color:var(--mu);font-size:.9rem}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:10px 0}
+.sc{overflow-x:auto}
+.tape{display:flex;gap:3px;min-width:max-content;padding:26px 0 6px}
+.c{width:38px;height:42px;border:1px solid var(--bd);border-radius:6px;display:flex;align-items:center;justify-content:center;font:600 1.1rem ui-monospace,Consolas,monospace;position:relative;background:var(--bg)}
+.c.h{background:var(--hd);border:2px solid var(--ac)}
+.c.h::before{content:"▼";position:absolute;top:-20px;color:var(--ac);font-size:.8rem}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+input,button,select{font:inherit;color:var(--tx);background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:7px 11px}
+input{width:9em;font-family:ui-monospace,Consolas,monospace}
+button{cursor:pointer}button.p{background:var(--ac);color:#fff;border-color:var(--ac)}button:disabled{opacity:.5;cursor:default}
+.st{font-weight:600}.ok{color:var(--ok)}.er{color:var(--er)}
+table{border-collapse:collapse;font-size:.88rem;width:100%}th,td{border:1px solid var(--bd);padding:4px 8px;text-align:center}th{background:var(--bg)}
+tr.on td{background:var(--hl)}
+pre{margin:0;font:.85rem/1.6 ui-monospace,Consolas,monospace;white-space:pre-wrap;overflow-x:auto}
+code{font-family:ui-monospace,Consolas,monospace}
+.log{max-height:220px;overflow:auto}.log div.l{background:var(--hl)}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px}
+a{color:var(--ac)}
+.nd circle{fill:var(--sf);stroke:var(--tx);stroke-width:1.5}.nd.on circle{fill:var(--hd);stroke:var(--ac);stroke-width:3}.nd text{fill:var(--tx);font:600 12px system-ui,sans-serif;text-anchor:middle;dominant-baseline:central}
+.ed{fill:none;stroke:var(--mu);stroke-width:1.4}.ed.on{stroke:var(--ac);stroke-width:3}
+.el{fill:var(--tx);font:10.5px ui-monospace,Consolas,monospace;text-anchor:middle}
+svg#dg{min-width:900px;width:100%;height:auto;display:block}
+#bt tbody tr{cursor:pointer}#bt tbody tr:hover td{background:var(--hl)}
+.xp{margin:8px 0;padding:10px 12px;border-left:4px solid var(--ac);background:var(--bg);border-radius:6px;font-size:.95rem}
+</style></head><body><main>
+<h1>Máquina de Turing MT3 · Comparador de cadenas binarias</h1>
+<p class="mu">Autómatas y Lenguajes Formales · Ciclo VI · Universidad Mariano Gálvez. La cinta contiene <code>w₁ □ w₂</code> con <code>w ∈ {0,1}⁺</code>. Si <code>w₁ = w₂</code>, la máquina escribe <code>=</code> al final de ambas cadenas y acepta. Si no, se detiene sin aceptar.</p>
+
+<h2>1. Simulación</h2>
+<div class="card">
+ <div class="row">
+  <label>w₁ <input id="a" value="1011" maxlength="14"></label>
+  <label>w₂ <input id="b" value="1011" maxlength="14"></label>
+  <button class="p" id="load">Cargar</button>
+  <button id="ex1">Ejemplo mínimo</button><button id="ex2">Ejemplo promedio</button><button id="ex3">Ejemplo distinto</button>
+ </div>
+ <div class="sc"><div class="tape" id="tape"></div></div>
+ <div class="row">
+  <button id="back">◀ Atrás</button><button id="step">Paso ▶</button><button class="p" id="run">▶ Ejecutar</button><button id="rst">Reiniciar</button>
+  <label class="mu">Velocidad <select id="spd"><option value="700">Lenta</option><option value="300" selected>Media</option><option value="80">Rápida</option></select></label>
+ </div>
+ <div class="row"><span>Estado: <span class="st" id="q">q0</span></span><span>Pasos: <span class="st" id="n">0</span></span><span class="st" id="res"></span></div>
+ <div class="xp" id="ex"></div>
+ <div class="mu">Descripción instantánea (ID) en curso — la posición del cabezal se marca con el estado:</div>
+ <div class="card log" id="log" style="margin:6px 0 0"></div>
+</div>
+
+<h2>1.1 Diagrama de estados</h2>
+<div class="card sc"><svg id="dg" viewBox="0 0 960 470" role="img" aria-label="Diagrama de estados de la máquina de Turing"></svg><p class="mu" style="margin:4px 0 0">El estado actual y la última transición usada se iluminan durante la simulación. Formato de cada arista: símbolo leído → símbolo escrito, movimiento (si no se escribe nada, el símbolo se deja igual).</p></div>
+
+<h2>2. Descripción formal</h2>
+<div class="g">
+<div class="card"><b>M = (Q, Σ, Γ, δ, q₀, □, F)</b>
+<pre>Q = {q0,q1,q2,q3,q4,q5,q6,q7,q8,q9,qf}   |Q| = 11
+Σ = {0, 1}                               |Σ| = 2
+Γ = {0, 1, X, Y, =, □}                   |Γ| = 6
+q₀ = q0     □ = blanco     F = {qf}
+|δ| = 40 transiciones (δ parcial, determinista)</pre>
+<p class="mu">Lenguaje de entrada: L = { w □ w | w ∈ {0,1}⁺ }. La entrada <code>w₁□w₂</code> con w₁≠w₂ es rechazada por bloqueo de la máquina.</p></div>
+<div class="card"><b>Función de cada estado</b>
+<pre>q0  busca el primer símbolo sin marcar de w₁
+q1  lleva un 0 hasta w₂      q2  lleva un 1 hasta w₂
+q3  en w₂ exige un 0         q4  en w₂ exige un 1
+q8,q9 regresan al inicio     q5  verifica que w₂ quedó marcada
+q6  restaura w₂, escribe =   q7  restaura w₁, escribe =
+qf  estado de aceptación</pre></div>
+</div>
+<h2>3. Tabla de transición δ(q, s) = (q′, escribe, mov)</h2>
+<div class="card sc"><table id="tt"></table></div>
+
+<h2>4. Gramática, expresión regular y funcionamiento</h2>
+<div class="g">
+<div class="card"><b>Gramática sensible al contexto (tipo 1)</b> para L. No es libre de contexto porque L es un lenguaje de copia.
+<pre>S → 0AS | 1BS | 0MA | 1MB
+A0→0A  A1→1A  B0→0B  B1→1B
+AM→MA  BM→MB
+MA→□0̂   MB→□1̂
+0̂A→0̂0̂  0̂B→0̂1̂  1̂A→1̂0̂  1̂B→1̂1̂
+0̂→0    1̂→1</pre>
+<b>Derivación de 01□01</b>
+<pre>S ⇒ 0AS ⇒ 0A1MB ⇒ 01AMB ⇒ 01MAB
+  ⇒ 01□0̂B ⇒ 01□0̂1̂ ⇒ 01□01̂ ⇒ 01□01</pre></div>
+<div class="card"><b>Expresión regular</b>
+<p>L no es regular, porque requiere memoria sin cota para comparar w con w. Lo que sí es regular es el formato de la entrada válida:</p>
+<pre>(0|1)⁺ □ (0|1)⁺</pre>
+<b>Funcionamiento</b>
+<p class="mu">Marca el primer símbolo sin marcar de w₁ (0→X, 1→Y) y lo recuerda en el estado. Viaja a w₂ y marca el primer símbolo sin marcar, que debe ser igual; si no lo es, se bloquea. Regresa al inicio y repite. Cuando w₁ se agota, verifica que w₂ también esté totalmente marcada. Finalmente escribe <code>=</code> tras w₂, restaura X→0 e Y→1 al volver, escribe <code>=</code> en el separador y se detiene en qf. La cinta queda <code>w₁=w₂=</code>.</p></div>
+</div>
+
+<h2>5. Cadenas evaluadas con ID (⊢)</h2>
+<div class="g"><div class="card"><b>Mínima: 0□0 (aceptada)</b><pre id="id1"></pre></div>
+<div class="card"><b>Promedio: 10□10 (aceptada)</b><pre id="id2"></pre></div></div>
+
+<h2>5.1 Pruebas automáticas</h2>
+<div class="card sc"><table id="bt"></table><p class="mu" style="margin:6px 0 0">Haz clic en una fila para cargarla en el simulador y verla paso a paso.</p></div>
+
+<h2>6. Video</h2>
+<div class="card"><div class="row"><input id="vu" style="width:min(24em,100%)" placeholder="Pega aquí el enlace de tu video"><button id="vb">Mostrar enlace</button></div><div id="vl"></div></div>
+</main>
+<script>
+const B='□',D={};
+const T=(q,s,q2,w,m)=>D[q+'|'+s]=[q2,w,m];
+for(const s of'XY'){T('q0',s,'q0',s,'R');T('q3',s,'q3',s,'R');T('q4',s,'q4',s,'R');T('q5',s,'q5',s,'R')}
+T('q0','0','q1','X','R');T('q0','1','q2','Y','R');T('q0',B,'q5',B,'R');
+for(const s of'01XY'){T('q1',s,'q1',s,'R');T('q2',s,'q2',s,'R');T('q8',s,'q8',s,'L');T('q9',s,'q9',s,'L')}
+T('q1',B,'q3',B,'R');T('q2',B,'q4',B,'R');T('q3','0','q8','X','L');T('q4','1','q8','Y','L');
+T('q8',B,'q9',B,'L');T('q9',B,'q0',B,'R');T('q5',B,'q6','=','L');
+T('q6','X','q6','0','L');T('q6','Y','q6','1','L');T('q6',B,'q7','=','L');
+T('q7','X','q7','0','L');T('q7','Y','q7','1','L');T('q7',B,'qf',B,'R');
+const $=i=>document.getElementById(i);
+const SY=['0','1','X','Y','=',B],QS=['q0','q1','q2','q3','q4','q5','q6','q7','q8','q9','qf'];
+$('tt').innerHTML='<tr><th>δ</th>'+SY.map(s=>`<th>${s}</th>`).join('')+'</tr>'+QS.map(q=>`<tr id="r${q}"><th>${q}${q=='q0'?' →':q=='qf'?' *':''}</th>`+SY.map(s=>{const v=D[q+'|'+s];return`<td>${v?`(${v[0]},${v[1]},${v[2]})`:'–'}</td>`}).join('')+'</tr>').join('');
+let tape,h,q,n,tm=null,halted,hist=[],last=null;
+const idStr=(tp,hh,qq)=>{const ks=Object.keys(tp).map(Number),lo=Math.min(0,hh,...ks),hi=Math.max(hh,...ks);let o=[];for(let i=lo;i<=hi;i++){if(i==hh)o.push(qq);o.push(tp[i]||B)}return o.join(' ').replace(/(^| )□( |$)/g,'$1□$2')};
+function load(){stop();const s=$('a').value.trim()+B+$('b').value.trim();if(!/^[01]+$/.test($('a').value.trim())||!/^[01]+$/.test($('b').value.trim())){$('res').className='st er';$('res').textContent='Usa solo 0 y 1 (mínimo un símbolo en cada cadena).';return}
+tape={};[...s].forEach((c,i)=>tape[i]=c);h=0;q='q0';n=0;halted=false;hist=[];last=null;$('log').innerHTML='';$('res').textContent='';log();draw()}
+function log(){const d=document.createElement('div');d.textContent=(n?'⊢ ':'')+idStr(tape,h,q);$('log').querySelectorAll('.l').forEach(e=>e.classList.remove('l'));d.className='l';$('log').appendChild(d);$('log').scrollTop=1e9}
+function draw(){const ks=Object.keys(tape).map(Number),lo=Math.min(-2,h-1),hi=Math.max(...ks)+3;let o='';for(let i=lo;i<=hi;i++)o+=`<div class="c${i==h?' h':''}">${tape[i]||B}</div>`;$('tape').innerHTML=o;$('q').textContent=q;$('n').textContent=n;info();const hc=document.querySelector('.c.h');if(hc)hc.scrollIntoView({inline:'center',block:'nearest'});
+document.querySelectorAll('tr.on').forEach(e=>e.classList.remove('on'));const r=$('r'+q);if(r)r.classList.add('on');
+if(halted){$('res').className='st '+(q=='qf'?'ok':'er');$('res').textContent=q=='qf'?'✔ ACEPTADA: cadenas iguales':'✘ RECHAZADA: la máquina se bloqueó en '+q}}
+function step(){if(halted)return false;const v=D[q+'|'+(tape[h]||B)];if(!v){halted=true;stop();draw();return false}
+hist.push(JSON.stringify([tape,h,q,n,last]));last={f:q,s:tape[h]||B,v};tape[h]=v[1];h+=v[2]=='R'?1:-1;q=v[0];n++;log();if(!D[q+'|'+(tape[h]||B)])halted=true;draw();if(halted)stop();return !halted}
+function stop(){clearInterval(tm);tm=null;$('run').textContent='▶ Ejecutar'}
+$('run').onclick=()=>{if(tm){stop();return}if(halted)load();$('run').textContent='⏸ Pausar';tm=setInterval(()=>{if(!step())stop()},+$('spd').value)};
+$('step').onclick=()=>{stop();if(halted)load();step()};
+$('rst').onclick=load;$('load').onclick=load;
+const ex=(a,b)=>()=>{$('a').value=a;$('b').value=b;load()};
+$('ex1').onclick=ex('0','0');$('ex2').onclick=ex('10','10');$('ex3').onclick=ex('1011','1001');
+function trace(s){let tp={},hh=0,qq='q0',o=[];[...s].forEach((c,i)=>tp[i]=c);o.push(idStr(tp,hh,qq));let v;while(v=D[qq+'|'+(tp[hh]||B)]){tp[hh]=v[1];hh+=v[2]=='R'?1:-1;qq=v[0];o.push(idStr(tp,hh,qq))}return o.map((x,i)=>(i?'⊢ ':'  ')+x).join('\n')}
+$('id1').textContent=trace('0'+B+'0');$('id2').textContent=trace('10'+B+'10');
+$('vb').onclick=()=>{const u=$('vu').value.trim();$('vl').innerHTML='';if(/^https?:\/\//.test(u)){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';a.textContent='▶ Ver video del proyecto';$('vl').appendChild(a)}};
+function back(){stop();if(!hist.length)return;[tape,h,q,n,last]=JSON.parse(hist.pop());halted=false;$('res').textContent='';const l=$('log');l.lastChild.remove();if(l.lastChild)l.lastChild.classList.add('l');draw()}
+$('back').onclick=back;
+const EX={q0:'Busca el primer símbolo sin marcar de w₁ y lo marca (0→X, 1→Y).',q1:'Lleva un 0 recordado hasta w₂, saltando todo lo que encuentra.',q2:'Lleva un 1 recordado hasta w₂, saltando todo lo que encuentra.',q3:'Dentro de w₂ busca un 0 sin marcar para emparejarlo.',q4:'Dentro de w₂ busca un 1 sin marcar para emparejarlo.',q5:'w₁ está agotada: verifica que w₂ no tenga símbolos sin marcar.',q6:'Restaura w₂ (X→0, Y→1) hacia la izquierda.',q7:'Restaura w₁ (X→0, Y→1) hacia la izquierda y termina.',q8:'Regresa a la izquierda cruzando w₂.',q9:'Regresa a la izquierda cruzando w₁ hasta el inicio.',qf:'Aceptación: las cadenas son iguales.'};
+function info(){document.querySelectorAll('.nd').forEach(e=>e.classList.toggle('on',e.dataset.q==q));document.querySelectorAll('.ed').forEach(e=>e.classList.toggle('on',!!last&&e.dataset.k==last.f+'>'+last.v[0]));
+const L=last?`<b>δ(${last.f}, ${last.s}) = (${last.v[0]}, ${last.v[1]}, ${last.v[2]})</b>: leyó <code>${last.s}</code>, escribió <code>${last.v[1]}</code> y se movió a la ${last.v[2]=='R'?'derecha':'izquierda'}.<br>`:'Cinta inicial cargada. Pulsa Paso o Ejecutar.<br>';
+$('ex').innerHTML=L+'<span class="mu">'+q+': '+(halted&&q!='qf'?'no hay transición para el símbolo actual; la cadena es rechazada.':EX[q])+'</span>'}
+(function(){const P={q0:[50,210],q1:[200,80],q2:[200,340],q5:[200,210],q3:[380,80],q4:[380,340],q6:[380,210],q8:[590,80],q9:[590,340],q7:[760,210],qf:[890,210]};
+const LD={q0:'u',q1:'u',q2:'d',q3:'u',q4:'d',q5:'u',q6:'u',q7:'u',q8:'u',q9:'r'};
+const E={};for(const k in D){const[a,s]=k.split('|'),[b,w,m]=D[k];(E[a+'>'+b]=E[a+'>'+b]||[]).push({s,w,m})}
+const lab=g=>{const m={};g.forEach(e=>{const key=(e.w==e.s?'':e.w)+'|'+e.m;(m[key]=m[key]||[]).push(e.s)});return Object.entries(m).map(([k,v])=>{const[w,mv]=k.split('|');return v.join(',')+' → '+(w?w+', ':'')+mv})};
+let o='<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="context-stroke"/></marker></defs>';
+const tx=(x,y,t)=>`<text class="el" x="${x}" y="${y}">${t}</text>`;
+for(const k in E){const[a,b]=k.split('>'),ls=lab(E[k]),N=ls.length;let d='',t='';const[x,y]=P[a];
+if(a==b){const z=LD[a];if(z=='u'){d=`M${x-12},${y-17} C${x-34},${y-62} ${x+34},${y-62} ${x+12},${y-17}`;ls.forEach((l,i)=>t+=tx(x,y-68-(N-1-i)*12,l))}
+else if(z=='d'){d=`M${x-12},${y+17} C${x-34},${y+62} ${x+34},${y+62} ${x+12},${y+17}`;ls.forEach((l,i)=>t+=tx(x,y+76+i*12,l))}
+else{d=`M${x+17},${y-12} C${x+62},${y-34} ${x+62},${y+34} ${x+17},${y+12}`;ls.forEach((l,i)=>t+=tx(x+100,y+4+(i-(N-1)/2)*12,l))}}
+else if(k=='q9>q0'){d='M590,360 V450 H50 V232';ls.forEach((l,i)=>t+=tx(320,440-(N-1-i)*12,l))}
+else{const[X,Y]=P[b],dx=X-x,dy=Y-y,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;d=`M${x+ux*20},${y+uy*20} L${X-ux*21},${Y-uy*21}`;const nx=uy,ny=-ux,mx=(x+X)/2+nx*12+(Math.abs(dx)<5?24:0),my=(y+Y)/2+ny*12;ls.forEach((l,i)=>t+=tx(mx,my+(ny<-.3?(i-(N-1))*12:i*12),l))}
+o+=`<path class="ed" data-k="${k}" d="${d}" marker-end="url(#ar)"/>`+t}
+o+='<path d="M12,196 L30,210 L12,224z" fill="var(--tx)"/>';
+for(const q in P){const[x,y]=P[q];o+=`<g class="nd" data-q="${q}"><circle cx="${x}" cy="${y}" r="20"/>${q=='qf'?`<circle cx="${x}" cy="${y}" r="15" style="stroke-width:1"/>`:''}<text x="${x}" y="${y}">${q}</text></g>`}
+$('dg').innerHTML=o})();
+function quiet(a,b){const tp={};[...(a+B+b)].forEach((c,i)=>tp[i]=c);let hh=0,qq='q0',k=0,v;while(v=D[qq+'|'+(tp[hh]||B)]){tp[hh]=v[1];hh+=v[2]=='R'?1:-1;qq=v[0];k++}
+const ks=Object.keys(tp).map(Number);let s='';for(let i=Math.min(...ks);i<=Math.max(...ks);i++)s+=tp[i]||B;return{ok:qq=='qf',qq,k,s:s.replace(/^□+/,'').replace(/□+$/,'')}}
+const CS=[['0','0'],['10','10'],['1011','1011'],['110010','110010'],['10','11'],['1','10'],['10','1'],['0','1']];
+$('bt').innerHTML='<thead><tr><th>w₁</th><th>w₂</th><th>¿w₁=w₂?</th><th>Resultado</th><th>Estado final</th><th>Pasos</th><th>Cinta final</th></tr></thead><tbody>'+CS.map(([a,b],i)=>{const r=quiet(a,b);return`<tr data-i="${i}"><td>${a}</td><td>${b}</td><td>${a==b?'sí':'no'}</td><td class="${r.ok?'ok':'er'}">${r.ok?'✔ Acepta':'✘ Rechaza'}${r.ok==(a==b)?'':' (¡error!)'}</td><td>${r.qq}</td><td>${r.k}</td><td><code>${r.s}</code></td></tr>`}).join('')+'</tbody>';
+document.querySelectorAll('#bt tbody tr').forEach(r=>r.onclick=()=>{const[a,b]=CS[r.dataset.i];$('a').value=a;$('b').value=b;load();window.scrollTo({top:0,behavior:'smooth'})});
+load();
+</script></body></html>
